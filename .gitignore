@@ -1,0 +1,6 @@
+# DB settings ignore
+weplate.settings['DATABASES']
+
+#SECRET_KEY ignore
+SECRET_KEY
+
