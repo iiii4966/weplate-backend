@@ -1,3 +1,3 @@
 # weplate-backend
 
- wecoder 갑기쓰
+ wecoder first project - weplate
