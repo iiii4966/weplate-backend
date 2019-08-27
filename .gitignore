@@ -1,6 +1,10 @@
-# DB settings ignore
-weplate.settings['DATABASES']
+#settings
+my_settings.py
 
-#SECRET_KEY ignore
-SECRET_KEY
+#swap
+*.swp
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
