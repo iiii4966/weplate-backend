@@ -1,10 +1,12 @@
 from django.http import JsonResponse
 from django.views import View
 from .models import Comment
+from utils import login_required
 import json
 
 class CommentView(View):
-
+    
+    @login_required
     def post(self, request, *args, **kwargs):
        
         data = json.loads(request.body)
@@ -27,7 +29,7 @@ class CommentView(View):
         
         if pk is None:
 
-            Comment(user_id = data['user_id'], comments = data['comment']).save()
+            Comment(user_id = request.user, comments = data['comment']).save()
 
             message = {'message':'SUCCESS'}
             status_code = 200
@@ -40,6 +42,7 @@ class CommentView(View):
 
         return JsonResponse(data, safe = False, status = 200)
     
+    @login_required
     def delete(self, request, *args, **kwargs):
         
         pk = kwargs['pk']
