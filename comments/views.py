@@ -6,7 +6,7 @@ import json
 
 class CommentView(View):
     
-    @login_required
+   @login_required
     def post(self, request, *args, **kwargs):
        
         data = json.loads(request.body)
@@ -29,7 +29,7 @@ class CommentView(View):
         
         if pk is None:
 
-            Comment(user_id = request.user, comments = data['comment']).save()
+            Comment(user_id = data['user_id'], comments = data['comment']).save()
 
             message = {'message':'SUCCESS'}
             status_code = 200
@@ -38,7 +38,7 @@ class CommentView(View):
 
     def get(self, request):
 
-        data = list(Comment.objects.values())
+        data = list(Comment.objects.filter(deleted_at = False).values())
 
         return JsonResponse(data, safe = False, status = 200)
     
@@ -49,7 +49,9 @@ class CommentView(View):
     
         if Comment.objects.filter(pk = pk).exists():
             
-            Comment.objects.get(pk = pk).delete()
+            deleted_comment = Comment.objects.get(pk = pk) 
+            deleted_comment.deleted_at = True
+            deleted_comment.save()
             
             message = {'message':'SUCCESS'} 
             status_code = 200
