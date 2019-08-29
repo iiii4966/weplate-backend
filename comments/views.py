@@ -5,31 +5,31 @@ from utils import login_required
 import json
 
 class CommentView(View):
-    
-   @login_required
+
+    @login_required
     def post(self, request, *args, **kwargs):
-       
+
         data = json.loads(request.body)
-        
-        if len(data['comment']) > 500:
+
+        if len(data['content']) > 500:
             return JsonResponse({"error_code":"500 Character Limit"}, status = 400)
-            
+
         try:
-            pk = kwargs['pk']
-                             
+            pk = kwargs['comment_id']
+
             update_comment = Comment.objects.get(pk = pk)
-            update_comment.comments = data['comment']
+            update_comment.content = data['content']
             update_comment.save()
-        
+
             message = {'message':'SUCCESS'}
             status_code = 200
 
         except:
             pk = None
-        
+
         if pk is None:
 
-            Comment(user_id = data['user_id'], comments = data['comment']).save()
+            Comment(user_id = request.user , content = data['content']).save()
 
             message = {'message':'SUCCESS'}
             status_code = 200
@@ -38,26 +38,21 @@ class CommentView(View):
 
     def get(self, request):
 
-        data = list(Comment.objects.filter(deleted_at = False).values())
-
+        data = list(Comment.objects.values())
         return JsonResponse(data, safe = False, status = 200)
     
     @login_required
     def delete(self, request, *args, **kwargs):
-        
-        pk = kwargs['pk']
-    
+
+        pk = kwargs['comment_id']
+
         if Comment.objects.filter(pk = pk).exists():
             
-            deleted_comment = Comment.objects.get(pk = pk) 
-            deleted_comment.deleted_at = True
-            deleted_comment.save()
-            
-            message = {'message':'SUCCESS'} 
+            Comment.objects.get(pk = pk).delete()
+            message = {'message':'SUCCESS'}
             status_code = 200
         else:
-            
             message = {'message':'NO Authorization'}
             status_code = 400
-        
+
         return JsonResponse(message, status = status_code)

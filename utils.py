@@ -1,7 +1,7 @@
 import jwt, json
 from weplate.my_settings import SECRET_KEY
 from django.http import JsonResponse
-from comments.models import Comment
+from user.models import User
 
 def login_required(func):
     def decorated_function(self, request, *args, **kwargs):
@@ -12,8 +12,8 @@ def login_required(func):
             try:
                 payload = jwt.decode(access_token, SECRET_KEY, 'HS256')
                 user_id = payload['user_id']
-                user = Account.objects.get(user_id = user_id)
-                request.user = user
+                user = User.objects.get(user_id = user_id)
+                request.user = user.user_id
 
             except jwt.DecodeError:
                 return JsonResponse({"error_code":"invalid_token"}, status = 401)
