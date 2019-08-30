@@ -29,7 +29,7 @@ class CommentView(View):
 
         if pk is None:
 
-            Comment(user_id = request.user , content = data['content']).save()
+            Comment(user = request.user , content = data['content']).save()
 
             message = {'message':'SUCCESS'}
             status_code = 200
@@ -38,7 +38,8 @@ class CommentView(View):
 
     def get(self, request):
 
-        data = list(Comment.objects.values())
+        data = Comment.objects.filter(deleted_at = False).values()
+        
         return JsonResponse(data, safe = False, status = 200)
     
     @login_required
@@ -48,7 +49,10 @@ class CommentView(View):
 
         if Comment.objects.filter(pk = pk).exists():
             
-            Comment.objects.get(pk = pk).delete()
+            del_comment = Comment.objects.get(pk = pk)
+            del_comment.deleted_at = True
+            del_comment.save()
+
             message = {'message':'SUCCESS'}
             status_code = 200
         else:

@@ -15,9 +15,7 @@ class Signup(View):
     def post(self, request):
 
         data = json.loads(request.body)
-
         hashed_pwd = bcrypt.hashpw(bytes(data['password'], "UTF-8"), bcrypt.gensalt())
-         
         account = User(user_id = data['user_id'], password = hashed_pwd.decode("UTF-8"))
         
         try:
