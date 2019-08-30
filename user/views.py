@@ -6,37 +6,43 @@ from datetime import datetime, timedelta
 
 import bcrypt
 import jwt, json
-import pdb
 
 # Create your views here.
 
-class Signup(View):
+class SignUp(View):
     
     def post(self, request):
-
+        
         data = json.loads(request.body)
-        hashed_pwd = bcrypt.hashpw(bytes(data['password'], "UTF-8"), bcrypt.gensalt())
-        account = User(user_id = data['user_id'], password = hashed_pwd.decode("UTF-8"))
+        
+        if 'user_id' in data and len(data['user_id']) >= 8:
+            user_id = data['user_id']
+        else:
+            return JsonResponse({"message":"ID_INVALID"}, status = 400)
+
+        if 'password' in data and len(data['password']) >= 8:
+            password = data['password']
+        else:
+            return JsonResponse({"message":"PWD_INVALID"}, status = 400)        
+
+        hashed_pwd = bcrypt.hashpw(bytes(password, "UTF-8"), bcrypt.gensalt())
+        account = User(user_id = user_id, password = hashed_pwd.decode("UTF-8"))
         
         try:
             account.save()
             return JsonResponse({"message":"SUCCESS"}, status = 200)
         except:
-            return JsonResponse({"message":"same ID exists"}, status = 400)
+            return JsonResponse({"message":"ID_EXIST"}, status = 400)
 
-class Login(View):
+class LogIn(View):
 
     def post(self, request):
-        
         data = json.loads(request.body)
-        
-        user_id = data['user_id']
-        password = data['password']
         
         if User.objects.filter(user_id = user_id).exists():
             user_password = User.objects.get(user_id = user_id).password
         else:
-            return JsonResponse({"message":"ID does not exists"}, status = 401)
+            return JsonResponse({"message":"ID_NOT_EXIST"}, status = 401)
         
         if bcrypt.checkpw(password.encode("UTF-8"), user_password.encode("UTF-8")):
             
@@ -49,12 +55,4 @@ class Login(View):
             
             return JsonResponse({"access_token":token.decode("UTF-8")}, status = 200)
         else:
-            return JsonResponse({"message":"pwd is invalid"}, status = 401)
-        
-
-
-
-
-        
-
-
+            return JsonResponse({"message":"PWD_INVALID"}, status = 401)

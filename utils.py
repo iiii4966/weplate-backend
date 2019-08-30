@@ -6,7 +6,7 @@ import pdb
 
 def login_required(func):
     def decorated_function(self, request, *args, **kwargs):
-            
+        
         access_token = request.headers.get('Authorization', None)
          
         if access_token:
