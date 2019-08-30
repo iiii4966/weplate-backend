@@ -26,7 +26,7 @@ class CommentView(View):
 
         except KeyError as err:
             
-        if err is not kwargs:
+            if err is not kwargs:
                 Comment(user = request.user , content = data['content']).save()
 
                 message = {'message':'SUCCESS'}
