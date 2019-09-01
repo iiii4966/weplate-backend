@@ -39,6 +39,12 @@ class LogIn(View):
     def post(self, request):
         data = json.loads(request.body)
         
+        if 'user_id' in data and 'password' in data:
+            user_id = data['user_id']    
+            password = data['password']
+        else:
+            return JsonResponse({'message':'MISSING_DATA'}, status = 400)
+
         if User.objects.filter(user_id = user_id).exists():
             user_password = User.objects.get(user_id = user_id).password
         else:
