@@ -8,8 +8,8 @@ import json
 class MainRestaurantView(View):
     
     def get(self, request):
-        main_list = Restaurant.objects.values('id', 'name').distinct()[:6]
-        image     = RestaurantImage.objects.values('image', 'restaurant_id').distinct().order_by('restaurant_id')[:6]
+        main_list = Restaurant.objects.values('id', 'name').distinct()[:10]
+        image     = RestaurantImage.objects.values('image', 'restaurant_id').distinct().order_by('restaurant_id')[:10]
         
         return JsonResponse({
                 'main_restaurant_name' : list(main_list),
@@ -26,10 +26,10 @@ class DetailRestaurantView(View):
             food_type = select_restaurant.food_type.name
             menu      = [menu for menu in Menu.objects.values().filter(restaurant = restaurant_id)]
         except KeyError as err:
-            JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)  
         except Restaurant.DoesNotExist as err:
-            JsonResponse({"message":"NONE_INFO"}, status = 401)
-               
+            return JsonResponse({"message":"INVALID_REQUEST"}, status = 401) 
+             
         return JsonResponse({
                 'restarant_info':info,
                 'restaurant_food_type':food_type,
