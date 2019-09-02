@@ -22,7 +22,7 @@ class Restaurant(models.Model):
     latitude    = models.DecimalField(max_digits = 20, decimal_places = 10, null = True)
     longitude   = models.DecimalField(max_digits = 20, decimal_places = 10, null = True)
     ratings     = models.IntegerField()
-    deleted_at  = models.BooleanField(default = False, null = True)
+    deleted     = models.BooleanField(default = False, null = True)
     
     class Meta:
         db_table = "restaurant"

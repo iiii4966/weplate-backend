@@ -18,15 +18,12 @@ class MainRestaurantView(View):
 
 class DetailRestaurantView(View):
 
-    def get(self, request, *args, **kwargs):
-        try:
-            restaurant_id     = kwargs['restaurant_id']
+    def get(self, request, restaurant_id):
+        try:   
             select_restaurant = Restaurant.objects.get(pk = restaurant_id)
             info      = Restaurant.objects.values().get(pk = restaurant_id)
             food_type = select_restaurant.food_type.name
-            menu      = [menu for menu in Menu.objects.values().filter(restaurant = restaurant_id)]
-        except KeyError as err:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)  
+            menu      = [menu for menu in Menu.objects.values().filter(restaurant = restaurant_id)]  
         except Restaurant.DoesNotExist as err:
             return JsonResponse({"message":"INVALID_REQUEST"}, status = 401) 
              
