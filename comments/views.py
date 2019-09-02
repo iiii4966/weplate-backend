@@ -4,13 +4,13 @@ from .models import Comment
 from utils import login_required
 import json
 
-class CommentCreateView(View):
+class CommentView(View):
 
     @login_required
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         data = json.loads(request.body)
         
-        if ('content' not in data) or (len(data['content']) > 500) or (len(data['content']) < 1):
+        if 'content' in data and len(data['content']) < 500 and len(data['content']) > 1:
             return JsonResponse({"error_code":"INVALID_REQUEST"}, status = 400)
 
         Comment(user = request.user , content = data['content']).save()
@@ -24,11 +24,10 @@ class CommentCreateView(View):
 class CommentUpdateDeleteView(View):
     
     @login_required
-    def post(self, request, *args, **kwargs):
-        comment_id = kwargs['comment_id']
+    def post(self, request, comment_id):
         data = json.loads(request.body)
         
-        if ('content' not in data) or (len(data['content']) > 500) or (len(data['content']) < 1):
+        if 'content' not in data and len(data['content']) < 500 and len(data['content']) > 1:
             return JsonResponse({"error_code":"INVALID_REQUEST"}, status = 400)
 
         try:
@@ -43,10 +42,9 @@ class CommentUpdateDeleteView(View):
             else:
                 message = {'message':'INVALID_USER'}
                 status_code = 400
-
         except Comment.DoesNotExist as err:
-            message = {'message':"NONE_COMMENT"}
-            status_code = 400
+            message = {'message':"NOT_FOUND"}
+            status_code = 404
          
         return JsonResponse(message, status = status_code)
             
@@ -66,10 +64,9 @@ class CommentUpdateDeleteView(View):
             else:
                 message = {'message':'INVALID_USER'}
                 status_code = 400
-                
         except Comment.DoesNotExist as err:
-            message = {'message':'NONE_DATA'}
-            status_code = 400
+            message = {'message':'NOT_FOUND'}
+            status_code = 404
 
         return JsonResponse(message, status = status_code)
 

@@ -19,7 +19,7 @@ def login_required(func):
                 return JsonResponse({"error_code":"INVALID_TOKEN"}, status = 401)
             
             except User.DoesNotExist:
-                return JsonResponse({"message":"ID_NOT_EXIST"}, status = 400)
+                return JsonResponse({"message":"ID_NOT_EXIST"}, status = 401)
                 
             return func(self, request, *args, **kwargs)
         else:

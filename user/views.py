@@ -1,5 +1,5 @@
 from weplate.my_settings import SECRET_KEY
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 from .models import User
 from datetime import datetime, timedelta
@@ -7,12 +7,9 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt, json
 
-# Create your views here.
-
 class SignUp(View):
     
     def post(self, request):
-        
         data = json.loads(request.body)
         
         if 'user_id' in data and len(data['user_id']) >= 8:
@@ -30,7 +27,7 @@ class SignUp(View):
         
         try:
             account.save()
-            return JsonResponse({"message":"SUCCESS"}, status = 200)
+            return  HttpResponse(status = 200)
         except:
             return JsonResponse({"message":"ID_EXIST"}, status = 400)
 
@@ -51,7 +48,6 @@ class LogIn(View):
             return JsonResponse({"message":"ID_NOT_EXIST"}, status = 401)
         
         if bcrypt.checkpw(password.encode("UTF-8"), user_password.encode("UTF-8")):
-            
             payload_id = user_id
             payload = {
                 'user_id': user_id,
