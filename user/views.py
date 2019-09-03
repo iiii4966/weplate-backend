@@ -1,5 +1,6 @@
 from weplate.my_settings import SECRET_KEY
 from django.http import JsonResponse, HttpResponse
+from django.db import IntegrityError
 from django.views import View
 from .models import User
 from datetime import datetime, timedelta
@@ -22,13 +23,14 @@ class SignUp(View):
         else:
             return JsonResponse({"message":"PWD_INVALID"}, status = 400)        
 
-        hashed_pwd = bcrypt.hashpw(bytes(password, "UTF-8"), bcrypt.gensalt())
-        account = User(user_id = user_id, password = hashed_pwd.decode("UTF-8"))
-        
         try:
+            hashed_pwd = bcrypt.hashpw(bytes(password, "UTF-8"), bcrypt.gensalt())
+            account = User(user_id = user_id, password = hashed_pwd.decode("UTF-8"))
             account.save()
-            return  HttpResponse(status = 200)
-        except:
+            return HttpResponse(status = 200)
+        except User.DoesNotExist:
+            return JsonResponse({"message":"NOT_FOUND"}, stauts = 404)
+        except IntegrityError as err:
             return JsonResponse({"message":"ID_EXIST"}, status = 400)
 
 class LogIn(View):
