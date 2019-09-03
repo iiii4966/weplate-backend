@@ -6,4 +6,7 @@ my_settings.py
 
 # Byte-compiled / optimized / DLL files
 *.pyc
-*$py.class
+*.egg-info
+*.pot
+*.py[co]
+__pycache__

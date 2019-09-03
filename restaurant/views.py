@@ -2,14 +2,16 @@ from django.views import View
 from django.http import JsonResponse
 from .models import Restaurant, RestaurantImage, Menu, Food, FoodType
 import json
+import random 
 
 # Create your views here.
 
 class MainRestaurantView(View):
     
     def get(self, request):
-        main_list = Restaurant.objects.values('id', 'name').distinct()[:10]
-        image     = RestaurantImage.objects.values('image', 'restaurant_id').distinct().order_by('restaurant_id')[:10]
+        random_int = random.randint(1, Restaurant.objects.count()-10)
+        main_list = Restaurant.objects.values('id', 'name').distinct()[random_int:random_int+10]
+        image     = RestaurantImage.objects.values('image', 'restaurant_id').distinct().order_by('restaurant_id')[random_int:random_int+10]
         
         return JsonResponse({
                 'main_restaurant_name' : list(main_list),
