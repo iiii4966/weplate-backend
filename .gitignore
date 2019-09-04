@@ -4,5 +4,9 @@ my_settings.py
 #swap
 *.swp
 
-# Byte-compiled / optimized / DLL files
+# __pycache__ / .pycache
 *.pyc
+*.egg-info
+*.pot
+*.py[co]
+__pycache__
