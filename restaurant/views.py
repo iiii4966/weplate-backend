@@ -11,6 +11,7 @@ class MainRestaurantView(View):
     def get(self, request):
         random_int = random.randint(1, Restaurant.objects.count()-9)
         main_restaurant = RestaurantImage.objects.values('restaurant__id','restaurant__name','image').distinct()[random_int:random_int+9]        
+        
         return JsonResponse({
                 'main_restaurant' : list(main_restaurant)
                 })
