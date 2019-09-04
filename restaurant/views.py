@@ -4,9 +4,7 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Restaurant, RestaurantImage, Menu, Food, FoodType
 import json
-import random, pdb 
-
-# Create your views here.
+import random
 
 class MainRestaurantView(View):
     
@@ -20,7 +18,7 @@ class MainRestaurantView(View):
 class DetailRestaurantView(View):
     
     def get(self, request):
-    query_data = request.GET.get('data', '')
+        query_data = request.GET.get('data', '')
 
         try: 
             query_data = int(query_data) 
@@ -36,7 +34,7 @@ class DetailRestaurantView(View):
                 food_type = restaurant.values('food_type__name').get(id = restaurant_id)
                 select_restaurant['food_type'] = food_type['food_type__name']
                 menu = [menu for menu in Menu.objects.values('id','menu_name','price','image','food_id','food__name').filter(restaurant = restaurant_id)] 
-            except Restaurant.DoesNotExist as err:
+            except ObjectDoesNotExist as err:
                 return JsonResponse({"message":"NOT_FOUND"}, status = 404)
          
         elif type(query_data) == str and query_data != '':
@@ -48,7 +46,7 @@ class DetailRestaurantView(View):
                 food_type = restaurant.values('food_type__name').filter(name__icontains = restaurant_name)[0]
                 select_restaurant['food_type'] = food_type['food_type__name']
                 menu = [menu for menu in Menu.objects.values('id','price','image','food_id','food__name').filter(restaurant__name__icontains = restaurant_name)][:1]
-            except Restaurant.DoesNotExist as err:
+            except ObjectDoesNotExist as err:
                 return JsonResponse({"message":"NOT_FOUND"}, status = 404)
             except IndexError as err:
                 return JsonResponse({"message":"NOT_FOUND"}, status = 404)
@@ -63,7 +61,6 @@ class DetailRestaurantView(View):
 class NearbyRecommandRestaurantView(View):
     
     def get(self, request, recommand_id):
-        
         try:
             restaurant_address = Restaurant.objects.get(pk = recommand_id).address 
             gu_data = restaurant_address.split()[1]
@@ -93,7 +90,7 @@ class SearchRestaurantListView(View):
 
         try:
             data = list(Restaurant.objects.filter(Q(address__icontains = search_data) | Q(name__icontains = search_data)).values('id', 'name')[:6])
-            return JsonResponse({'restaurant_info':data}, safe = False)
+            return JsonResponse(data, safe = False)
         except Restaurant.DoesNotExist as err:
             return JsonResponse({"NOT_FOUND"}, status = 404)
 
