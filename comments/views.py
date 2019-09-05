@@ -10,7 +10,7 @@ class CommentView(View):
     def post(self, request):
         data = json.loads(request.body)
         
-        if 'content' not in data and len(data['content']) > 500 and len(data['content']) < 1:
+        if 'content' not in data and len(data['content']) > 500 or len(data['content']) < 1:
             return JsonResponse({"error_code":"INVALID_REQUEST"}, status = 400)
 
         Comment(user = request.user , content = data['content']).save()
@@ -38,7 +38,7 @@ class CommentUpdateDeleteView(View):
     def post(self, request, comment_id):
         data = json.loads(request.body)
         
-        if 'content' not in data and len(data['content']) > 500 and len(data['content']) < 1:
+        if 'content' not in data and len(data['content']) > 500 or len(data['content']) < 1:
             return JsonResponse({"error_code":"INVALID_REQUEST"}, status = 400)
 
         try:
