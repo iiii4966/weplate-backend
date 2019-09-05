@@ -3,8 +3,10 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Restaurant, RestaurantImage, Menu, Food, FoodType
+from weplate.my_settings import kakao_auth_key
 import json
 import random
+import requests
 
 class MainRestaurantView(View):
     
@@ -81,7 +83,7 @@ class NearbyRecommandRestaurantView(View):
 class SearchRestaurantListView(View):
 
     def get(self, request):
-        search_data = request.GET.get('search', '')
+        search_data = request.GET.get('data', '')
         
         if search_data == '':
             return JsonResponse({'message':'NOT_FOUND'}, status = 404)
@@ -95,7 +97,24 @@ class SearchRestaurantListView(View):
         except Restaurant.DoesNotExist as err:
             return JsonResponse({"NOT_FOUND"}, status = 404)
 
+class RestaurantMapView(View):
+    
+    def get(self, request, restaurant_id):
+        url = "https://dapi.kakao.com/v2/local/geo/coord2address.json"
+        header = {'Authorization' : kakao_auth_key}
 
+        try:
+            user_info = Restaurant.objects.get(id = restaurant_id)
+            params = {
+                    'x':user_info.longitude,
+                    'y':user_info.latitude
+                    }
+            my_response = requests.get(url, headers=header, params = params, timeout=5).json()
 
+            return JsonResponse(my_response)
+        except Restaurant.DoesNotExist as err:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+        except ConnetionError as err:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
 
                 
