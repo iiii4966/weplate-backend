@@ -1,9 +1,9 @@
 from weplate.my_settings import SECRET_KEY
-from django.http import JsonResponse, HttpResponse
-from django.db import IntegrityError
-from django.views import View
-from .models import User
-from datetime import datetime, timedelta
+from django.http         import JsonResponse, HttpResponse
+from django.db           import IntegrityError
+from django.views        import View
+from .models             import User
+from datetime            import datetime, timedelta
 
 import bcrypt
 import jwt, json
@@ -33,7 +33,7 @@ class SignUp(View):
         except IntegrityError as err:
             return JsonResponse({"message":"ID_EXIST"}, status = 400)
 
-class LogIn(View):
+class Login(View):
 
     def post(self, request):
         data = json.loads(request.body)
@@ -53,10 +53,13 @@ class LogIn(View):
             payload_id = user_id
             payload = {
                 'user_id': user_id,
-                    'exp': datetime.utcnow() + timedelta(60 * 60 * 24)
+                    'exp': datetime.utcnow() + timedelta(days = 1)
             }
             token = jwt.encode(payload, SECRET_KEY)
             
             return JsonResponse({"access_token":token.decode("UTF-8")}, status = 200)
         else:
             return JsonResponse({"message":"PWD_INVALID"}, status = 401)
+
+#class SocialLogin(View):
+

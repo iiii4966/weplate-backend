@@ -14,6 +14,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', 'localhost', 'localhost:8000' ]
 
+INTERNAL_IPS = ['127.0.0.1']
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+}
 
 # Application definition
 
@@ -27,13 +32,16 @@ INSTALLED_APPS = [
     'corsheaders',
     'comments',
     'user',
-    'restaurant'   
+    'restaurant',
+    'debug_toolbar',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 #'django.middleware.csrf.CsrfViewMiddleware',
 #'django.contrib.auth.middleware.AuthenticationMiddleware',

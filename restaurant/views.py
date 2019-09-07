@@ -1,8 +1,7 @@
-from django.views import View
-from django.http import JsonResponse
-from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
-from .models import Restaurant, RestaurantImage, Menu, Food, FoodType
+from django.views        import View
+from django.http         import JsonResponse, HttpResponse
+from django.db.models    import Q
+from .models             import Restaurant, RestaurantImage, Menu, Food, FoodType
 from weplate.my_settings import KAKAO_AUTH_KEY
 import json
 import random
@@ -12,58 +11,31 @@ class MainRestaurantView(View):
     
     def get(self, request):
         random_int = random.randint(1, Restaurant.objects.count()-9)
-        main_restaurant = RestaurantImage.objects.values('restaurant__id','restaurant__name','image').distinct()[random_int:random_int+9]        
         
-        return JsonResponse({
-                'main_restaurant' : list(main_restaurant)
-                })
+        try:
+            main_restaurant = RestaurantImage.objects.values('restaurant__id','restaurant__name','image').distinct()[random_int:random_int+9]        
+            return JsonResponse({'main_restaurant' : list(main_restaurant)})
+        except RestaurantImage.DoesNotExist as err:
+            return HttpResponse(status = 404)
 
 class DetailRestaurantView(View):
     
-    def get(self, request):
-        query_data = request.GET.get('data', '')
+    def get(self, request, restaurant_id):
+        try:
+            restaurant_info = Restaurant.objects.values().get(id = restaurant_id)
+            restaurant_info['menu'] = list(Menu.objects.filter(restaurant = restaurant_id).values())
 
-        try: 
-            query_data = int(query_data) 
-        except ValueError as err:
-            query_data = query_data
-
-        if type(query_data) == int:
-            restaurant_id = query_data
-
-            try:   
-                restaurant = Restaurant.objects.select_related('food_type')
-                select_restaurant = restaurant.values().get(id = restaurant_id)
-                food_type = restaurant.values('food_type__name').get(id = restaurant_id)
-                select_restaurant['food_type'] = food_type['food_type__name']
-                menu = [menu for menu in Menu.objects.values('id','menu_name','price','image','food_id','food__name').filter(restaurant = restaurant_id)] 
-            except ObjectDoesNotExist as err:
-                return JsonResponse({"message":"NOT_FOUND"}, status = 404)
-         
-        elif type(query_data) == str and query_data != '':
-            restaurant_name = query_data
-            
-            try:
-                restaurant = Restaurant.objects.select_related('food_type')
-                select_restaurant = restaurant.values().filter(name__icontains = restaurant_name)[0]
-                food_type = restaurant.values('food_type__name').filter(name__icontains = restaurant_name)[0]
-                select_restaurant['food_type'] = food_type['food_type__name']
-                menu = [menu for menu in Menu.objects.values('id','price','image','food_id','food__name').filter(restaurant__name__icontains = restaurant_name)][:1]
-            except ObjectDoesNotExist as err:
-                return JsonResponse({"message":"NOT_FOUND"}, status = 404)
-            except IndexError as err:
-                return JsonResponse({"message":"NOT_FOUND"}, status = 404)
-        else:
+            return JsonResponse({"restaurant_info":restaurant_info})
+        except Restaurant.DoesNotExist as err:
             return JsonResponse({"message":"NOT_FOUND"}, status = 404)
-        
-        return JsonResponse({
-                'restarant_info': select_restaurant,
-                'restaurant_menu': menu
-                })
+        except Menu.DoesNotExist as err:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
         
 class NearbyRecommandRestaurantView(View):
     
     def get(self, request, recommand_id):
+        random_int = random.randint(1, Restaurant.objects.count()-5)
+        
         try:
             restaurant_address = Restaurant.objects.get(pk = recommand_id).address 
             gu_data = restaurant_address.split()[1]
@@ -75,11 +47,34 @@ class NearbyRecommandRestaurantView(View):
                     'restaurant__price_range',
                     'restaurant__address',
                     'food__food_type__name',
-                    )[:5]
+                    ).distinct()[random_int : random_int+5]
+
             return JsonResponse(list(data), safe = False)
-        except ObjectDoesNotExist as err:
+        except Restaurant.DoesNotExist as err:
+            return JsonResponse({'message':'NOT_FOUND'}, status = 404)
+        except Menu.DoesNotExist as err:
             return JsonResponse({'message':'NOT_FOUND'}, status = 404)
 
+class SearchRestaurantView(View):
+    
+     def get(self, request):
+        restaurant = request.GET.get('data', '')
+        
+        if restaurant == '':
+            return HttpResponse(status = 404)
+        
+        try:
+            restaurant_info = Restaurant.objects.values().filter(Q(name__icontains = restaurant) | Q(address__icontains = restaurant))[0]
+            restaurant_info['menu'] = list(Menu.objects.filter(restaurant = restaurant_info['id']).values())
+
+            return JsonResponse({"restaurant_info":restaurant_info})
+        except Restaurant.DoesNotExist as err:
+            return HttpResponse(status = 404)
+        except Menu.DoesNotExist as err:
+            return HttpResponse(status = 404)
+        except IndexError as err:
+            return HttpResponse(status = 404)
+        
 class SearchRestaurantListView(View):
 
     def get(self, request):
@@ -88,9 +83,6 @@ class SearchRestaurantListView(View):
         if search_data == '':
             return JsonResponse({'message':'NOT_FOUND'}, status = 404)
         
-        if search_data == '선릉':
-                search_data = '역삼'
-
         try:
             data = list(Restaurant.objects.filter(Q(address__icontains = search_data) | Q(name__icontains = search_data)).values('id', 'name')[:6])
             return JsonResponse(data, safe = False)
