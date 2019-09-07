@@ -1,9 +1,9 @@
-from django.http import JsonResponse, HttpResponse
-from django.views import View
-from .models import Comment
-from restaurant.models import Restaurant
-from utils import login_required
-from django.core.exceptions import FieldError, ObjectDoesNotExist
+from django.http        import JsonResponse, HttpResponse
+from django.views       import View
+from .models            import Comment
+from restaurant.models  import Restaurant
+from utils              import login_required
+
 import json
 
 class CommentView(View):
@@ -20,10 +20,12 @@ class CommentView(View):
             restaurant = Restaurant.objects.get(id = data['restaurant_id'])
             Comment(user = request.user, Restaurant = restaurant, content = data['content']).save()
             return HttpResponse(status = 200)
-        except ObjectDoesNotExist:
-            return JsonResponse({"message":"SUCCESS"}, status = 400)
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+        except Comment.DoesNotExist:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
         except ValueError as err:
-            return JsonResponse({"message":"INVALID_REQUEST"}, status = 401)
+            return JsonResponse({"message":"INVALID_REQUEST"}, status = 400)
 
     def get(self, request):
         restaurant_id = request.GET.get('restaurant_id', '')
@@ -38,8 +40,6 @@ class CommentView(View):
                     ).filter(deleted = False, Restaurant = int(restaurant_id))
         except Comment.DoesNotExist as err:
                 data = [] 
-        except FieldError as err:
-                data = []
         except ValueError as err:
                 data = []
         return JsonResponse(list(data), safe = False, status = 200)
@@ -64,7 +64,7 @@ class CommentUpdateDeleteView(View):
                 status_code = 200
             else:
                 message = {'message':'INVALID_USER'}
-                status_code = 400
+                status_code = 401
         except Comment.DoesNotExist as err:
             message = {'message':"NOT_FOUND"}
             status_code = 404
@@ -84,7 +84,7 @@ class CommentUpdateDeleteView(View):
                 status_code = 200
             else:
                 message = {'message':'INVALID_USER'}
-                status_code = 400
+                status_code = 401
         except Comment.DoesNotExist as err:
             message = {'message':'NOT_FOUND'}
             status_code = 404
