@@ -1,9 +1,9 @@
-from django.http import JsonResponse, HttpResponse
-from django.views import View
-from .models import Comment
-from restaurant.models import Restaurant
-from utils import login_required
-from django.core.exceptions import FieldError, ObjectDoesNotExist
+from django.http        import JsonResponse, HttpResponse
+from django.views       import View
+from .models            import Comment
+from restaurant.models  import Restaurant
+from utils              import login_required
+
 import json
 
 class CommentView(View):
@@ -20,8 +20,10 @@ class CommentView(View):
             restaurant = Restaurant.objects.get(id = data['restaurant_id'])
             Comment(user = request.user, Restaurant = restaurant, content = data['content']).save()
             return HttpResponse(status = 200)
-        except ObjectDoesNotExist:
-            return JsonResponse({"message":"SUCCESS"}, status = 400)
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+        except Comment.DoesNotExist:
+            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
         except ValueError as err:
             return JsonResponse({"message":"INVALID_REQUEST"}, status = 401)
 
@@ -38,8 +40,6 @@ class CommentView(View):
                     ).filter(deleted = False, Restaurant = int(restaurant_id))
         except Comment.DoesNotExist as err:
                 data = [] 
-        except FieldError as err:
-                data = []
         except ValueError as err:
                 data = []
         return JsonResponse(list(data), safe = False, status = 200)
