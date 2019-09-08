@@ -16,12 +16,12 @@ class SignUp(View):
         if 'user_id' in data and len(data['user_id']) >= 8:
             user_id = data['user_id']
         else:
-            return JsonResponse({"message":"ID_INVALID"}, status = 400)
+            return JsonResponse({"error":"ID_INVALID"}, status = 400)
 
         if 'password' in data and len(data['password']) >= 8:
             password = data['password']
         else:
-            return JsonResponse({"message":"PWD_INVALID"}, status = 400)        
+            return JsonResponse({"error":"PWD_INVALID"}, status = 400)        
 
         try:
             hashed_pwd = bcrypt.hashpw(bytes(password, "UTF-8"), bcrypt.gensalt())
@@ -29,9 +29,9 @@ class SignUp(View):
             account.save()
             return HttpResponse(status = 200)
         except User.DoesNotExist:
-            return JsonResponse({"message":"NOT_FOUND"}, stauts = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, stauts = 404)
         except IntegrityError as err:
-            return JsonResponse({"message":"ID_EXIST"}, status = 400)
+            return JsonResponse({"error":"ID_EXIST"}, status = 400)
 
 class Login(View):
 
@@ -42,12 +42,12 @@ class Login(View):
             user_id = data['user_id']    
             password = data['password']
         else:
-            return JsonResponse({'message':'MISSING_DATA'}, status = 400)
+            return JsonResponse({'error':'MISSING_DATA'}, status = 400)
 
         if User.objects.filter(user_id = user_id).exists():
             user_password = User.objects.get(user_id = user_id).password
         else:
-            return JsonResponse({"message":"ID_NOT_EXIST"}, status = 401)
+            return JsonResponse({"error":"ID_NOT_EXIST"}, status = 401)
         
         if bcrypt.checkpw(password.encode("UTF-8"), user_password.encode("UTF-8")):
             payload_id = user_id
@@ -59,7 +59,7 @@ class Login(View):
             
             return JsonResponse({"access_token":token.decode("UTF-8")}, status = 200)
         else:
-            return JsonResponse({"message":"PWD_INVALID"}, status = 401)
+            return JsonResponse({"error":"PWD_INVALID"}, status = 401)
 
 #class SocialLogin(View):
 

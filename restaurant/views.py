@@ -14,9 +14,9 @@ class MainRestaurantView(View):
         
         try:
             main_restaurant = RestaurantImage.objects.values('restaurant__id','restaurant__name','image').distinct()[random_int:random_int+9]        
-            return JsonResponse({'main_restaurant' : list(main_restaurant)})
+            return JsonResponse(list(main_restaurant), safe = False)
         except RestaurantImage.DoesNotExist as err:
-            return HttpResponse(status = 404)
+            return JsonRespone({"error":"NOT_FOUND"}, status = 404)
 
 class DetailRestaurantView(View):
     
@@ -27,9 +27,9 @@ class DetailRestaurantView(View):
 
             return JsonResponse({"restaurant_info":restaurant_info})
         except Restaurant.DoesNotExist as err:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except Menu.DoesNotExist as err:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         
 class NearbyRecommandRestaurantView(View):
     
@@ -51,9 +51,9 @@ class NearbyRecommandRestaurantView(View):
 
             return JsonResponse(list(data), safe = False)
         except Restaurant.DoesNotExist as err:
-            return JsonResponse({'message':'NOT_FOUND'}, status = 404)
+            return JsonResponse({'error':'NOT_FOUND'}, status = 404)
         except Menu.DoesNotExist as err:
-            return JsonResponse({'message':'NOT_FOUND'}, status = 404)
+            return JsonResponse({'error':'NOT_FOUND'}, status = 404)
 
 class SearchRestaurantView(View):
     
@@ -69,25 +69,25 @@ class SearchRestaurantView(View):
 
             return JsonResponse({"restaurant_info":restaurant_info})
         except Restaurant.DoesNotExist as err:
-            return HttpResponse(status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except Menu.DoesNotExist as err:
-            return HttpResponse(status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except IndexError as err:
-            return HttpResponse(status = 404)
-        
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
+ 
 class SearchRestaurantListView(View):
 
     def get(self, request):
         search_data = request.GET.get('data', '')
         
         if search_data == '':
-            return JsonResponse({'message':'NOT_FOUND'}, status = 404)
+            return JsonResponse({'error':'NOT_FOUND'}, status = 404)
         
         try:
             data = list(Restaurant.objects.filter(Q(address__icontains = search_data) | Q(name__icontains = search_data)).values('id', 'name')[:6])
             return JsonResponse(data, safe = False)
         except Restaurant.DoesNotExist as err:
-            return JsonResponse({"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
 
 class RestaurantMapView(View):
     
@@ -105,8 +105,8 @@ class RestaurantMapView(View):
 
             return JsonResponse(my_response)
         except Restaurant.DoesNotExist as err:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except ConnetionError as err:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
 
                 

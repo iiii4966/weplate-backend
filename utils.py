@@ -13,13 +13,13 @@ def login_required(func):
                 user_id = payload['user_id']
                 request.user = User.objects.get(user_id = user_id)
             except jwt.DecodeError:
-                return JsonResponse({"error_code":"INVALID_TOKEN"}, status = 401)
+                return JsonResponse({"error":"INVALID_TOKEN"}, status = 401)
             except User.DoesNotExist:
-                return JsonResponse({"message":"ID_NOT_EXIST"}, status = 401)
+                return JsonResponse({"error":"ID_NOT_EXIST"}, status = 401)
                 
             return func(self, request, *args, **kwargs)
         else:
-            return JsonResponse({"message":"LOGIN_REQUIRED"}, status = 401)
+            return JsonResponse({"error":"LOGIN_REQUIRED"}, status = 401)
         
     return decorated_function 
  

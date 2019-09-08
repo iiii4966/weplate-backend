@@ -19,30 +19,32 @@ class CommentView(View):
 
             restaurant = Restaurant.objects.get(id = data['restaurant_id'])
             Comment(user = request.user, Restaurant = restaurant, content = data['content']).save()
-            return HttpResponse(status = 200)
+            
+            return JsonResponse({"message":"SUCCESS"}, status = 200)
         except Restaurant.DoesNotExist:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except Comment.DoesNotExist:
-            return JsonResponse({"message":"NOT_FOUND"}, status = 404)
+            return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except ValueError as err:
-            return JsonResponse({"message":"INVALID_REQUEST"}, status = 400)
+            return JsonResponse({"error":"INVALID_REQUEST"}, status = 400)
 
     def get(self, request):
         restaurant_id = request.GET.get('restaurant_id', '')
         
         try:
-            data = Comment.objects.values(
+            data = list(Comment.objects.values(
                     'id', 
                     'user_id', 
                     'user__user_id', 
                     'content', 
                     'created_at'
-                    ).filter(deleted = False, Restaurant = int(restaurant_id))
+                    ).filter(deleted = False, Restaurant = int(restaurant_id)))
         except Comment.DoesNotExist as err:
                 data = [] 
         except ValueError as err:
-                data = []
-        return JsonResponse(list(data), safe = False, status = 200)
+                return JsonResponse({"error":"NOT_FOUND"}, status = 404)
+
+        return JsonResponse(data, safe = False, status = 200)
     
 class CommentUpdateDeleteView(View):
     
@@ -51,7 +53,7 @@ class CommentUpdateDeleteView(View):
         data = json.loads(request.body)
         
         if 'content' not in data and len(data['content']) > 500 or len(data['content']) < 1:
-            return JsonResponse({"error_code":"INVALID_REQUEST"}, status = 400)
+            return JsonResponse({"error":"INVALID_REQUEST"}, status = 400)
 
         try:
             update_comment = Comment.objects.get(pk = comment_id)
@@ -63,10 +65,10 @@ class CommentUpdateDeleteView(View):
                 message = {'message':'SUCCESS'}
                 status_code = 200
             else:
-                message = {'message':'INVALID_USER'}
+                message = {'error':'INVALID_USER'}
                 status_code = 401
         except Comment.DoesNotExist as err:
-            message = {'message':"NOT_FOUND"}
+            message = {'error':"NOT_FOUND"}
             status_code = 404
          
         return JsonResponse(message, status = status_code)
@@ -83,10 +85,10 @@ class CommentUpdateDeleteView(View):
                 message = {'message':'SUCCESS'}
                 status_code = 200
             else:
-                message = {'message':'INVALID_USER'}
+                message = {'erro':'INVALID_USER'}
                 status_code = 401
         except Comment.DoesNotExist as err:
-            message = {'message':'NOT_FOUND'}
+            message = {'error':'NOT_FOUND'}
             status_code = 404
 
         return JsonResponse(message, status = status_code)
