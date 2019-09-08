@@ -25,7 +25,7 @@ class CommentView(View):
             return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except Comment.DoesNotExist:
             return JsonResponse({"error":"NOT_FOUND"}, status = 404)
-        except ValueError as err:
+       except ValueError as err:
             return JsonResponse({"error":"INVALID_REQUEST"}, status = 400)
 
     def get(self, request):
