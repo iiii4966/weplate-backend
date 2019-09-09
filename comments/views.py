@@ -25,7 +25,7 @@ class CommentView(View):
             return JsonResponse({"error":"NOT_FOUND"}, status = 404)
         except Comment.DoesNotExist:
             return JsonResponse({"error":"NOT_FOUND"}, status = 404)
-       except ValueError as err:
+        except ValueError as err:
             return JsonResponse({"error":"INVALID_REQUEST"}, status = 400)
 
     def get(self, request):
@@ -85,7 +85,7 @@ class CommentUpdateDeleteView(View):
                 message = {'message':'SUCCESS'}
                 status_code = 200
             else:
-                message = {'erro':'INVALID_USER'}
+                message = {'error':'INVALID_USER'}
                 status_code = 401
         except Comment.DoesNotExist as err:
             message = {'error':'NOT_FOUND'}

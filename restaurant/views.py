@@ -1,8 +1,9 @@
 from django.views        import View
-from django.http         import JsonResponse, HttpResponse
+from django.http         import JsonResponse
 from django.db.models    import Q
 from .models             import Restaurant, RestaurantImage, Menu, Food, FoodType
 from weplate.my_settings import KAKAO_AUTH_KEY
+
 import json
 import random
 import requests
@@ -34,21 +35,15 @@ class DetailRestaurantView(View):
 class NearbyRecommandRestaurantView(View):
     
     def get(self, request, recommand_id):
-        random_int = random.randint(1, Restaurant.objects.count()-5)
-        
         try:
             restaurant_address = Restaurant.objects.get(pk = recommand_id).address 
             gu_data = restaurant_address.split()[1]
-            nearby_restaurant = Menu.objects.filter(restaurant__address__icontains = gu_data)
-            data = nearby_restaurant.values(
-                    'id', 
-                    'image', 
-                    'restaurant__name',
-                    'restaurant__price_range',
-                    'restaurant__address',
-                    'food__food_type__name',
-                    ).distinct()[random_int : random_int+5]
-
+            data = Restaurant.objects.filter(address__icontains = gu_data).values(
+                    'name',
+                    'address',
+                    'price_range', 
+                    'food_type__name', 
+                    'restaurantimage__image').distinct()[:5]
             return JsonResponse(list(data), safe = False)
         except Restaurant.DoesNotExist as err:
             return JsonResponse({'error':'NOT_FOUND'}, status = 404)

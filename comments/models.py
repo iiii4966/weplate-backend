@@ -11,6 +11,6 @@ class Comment(models.Model):
     deleted     = models.BooleanField(default = False, null = True)
    
     class Meta:
-        db_table = 'comments'
+        db_table = 'comment'
 
 
